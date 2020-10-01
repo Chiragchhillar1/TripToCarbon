@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use App\Models\CarbonFootprint;
+use Illuminate\Support\Facades\Cache;
 
 class TripController extends Controller
 {
@@ -36,9 +38,13 @@ class TripController extends Controller
 
     	$urlParams = '';
 
+    	$saveDb = [];
+
         foreach ($params as $key => $value) {
 
         	$urlParams = $urlParams.$key.'='.$value.'&';
+
+        	$saveDb[$key] = $value;
 
         }
 
@@ -46,6 +52,8 @@ class TripController extends Controller
 		$urlParams = rtrim($urlParams, "&");
 
 		$url = 'https://api.triptocarbon.xyz/v1/footprint?'.$urlParams;
+
+		$carbonFootprint = CarbonFootprint::create($saveDb); 
 
         return $url;    
     }
@@ -78,7 +86,11 @@ class TripController extends Controller
         	
         }
 
-    	return json_decode($response->getBody(), true);
+    	$mainResponse =  json_decode($response->getBody(), true);
+
+    	Cache::put('CarbonFootprint', $mainResponse, 120);
+
+    	return $mainResponse;
 
     }
 }

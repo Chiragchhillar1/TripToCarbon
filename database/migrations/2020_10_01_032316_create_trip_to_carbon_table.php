@@ -15,6 +15,12 @@ class CreateTripToCarbonTable extends Migration
     {
         Schema::create('trip_to_carbon', function (Blueprint $table) {
             $table->id();
+            $table->string('activity');
+            $table->text('activityType');
+            $table->text('country');
+            $table->text('mode');
+            $table->text('fuelType');
+            $table->text('appTkn');
             $table->timestamps();
         });
     }
