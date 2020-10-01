@@ -6,13 +6,15 @@ use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use App\Models\CarbonFootprint;
 use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
+use App\Http\Resources\TripToCarbon;
 
 class TripController extends Controller
 {
 	/**
      * check for validations for Trip to carbon API
      * @param  [type] $data [description]
-     * @return [type]       [description]
+     * @return [type] Validation Response
      */
     private function paramValidator($data)
     {
@@ -31,34 +33,42 @@ class TripController extends Controller
 
     /**
      * Adding available params to URL.
+     * Saving request params to DB.
      * 
+     * Return - API url.
      */ 
     private function buildUrl($params)
     {
 
     	$urlParams = '';
 
-    	$saveDb = [];
+    	$saveToDb = [];
 
         foreach ($params as $key => $value) {
 
         	$urlParams = $urlParams.$key.'='.$value.'&';
 
-        	$saveDb[$key] = $value;
+        	$saveToDb[$key] = $value;
 
         }
 
         //Remove the last character using rtrim
 		$urlParams = rtrim($urlParams, "&");
 
-		$url = 'https://api.triptocarbon.xyz/v1/footprint?'.$urlParams;
+		$apiUrl = 'https://api.triptocarbon.xyz/v1/footprint?'.$urlParams;
 
-		$carbonFootprint = CarbonFootprint::create($saveDb); 
+		$carbonFootprint = CarbonFootprint::create($saveToDb); 
 
-        return $url;    
+        return $apiUrl;    
     }
 
-	//main controller
+	/**
+	 * Function for fetching carbon foorprint value from 
+	 * TripToCarbon API.
+	 * 
+	 * Caching the Response in Cache-file for a day.
+	 * 
+	 */ 
     public function getCarbonFootprint(Request $request)
     {
     	$data = $request->all();
@@ -69,13 +79,13 @@ class TripController extends Controller
             return $validator->errors();
         }
 
-        $url = $this->buildUrl($data);
+        $apiUrl = $this->buildUrl($data);
 
         $client = new Client();
 
         try {
 
-    		$response = $client->request('GET', $url);
+    		$response = $client->request('GET', $apiUrl);
         	
         } catch (\Exception $e) {
 
@@ -86,11 +96,12 @@ class TripController extends Controller
         	
         }
 
-    	$mainResponse =  json_decode($response->getBody(), true);
+    	$carbonFootprintResponse =  json_decode($response->getBody(), true);
 
-    	Cache::put('CarbonFootprint', $mainResponse, 120);
+    	Cache::put('CarbonFootprint'.Carbon::now()->timestamp, $carbonFootprintResponse, 86400);
 
-    	return $mainResponse;
+    	return new TripToCarbon($carbonFootprintResponse);
 
     }
+    
 }

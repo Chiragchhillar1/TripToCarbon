@@ -22,14 +22,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
  * API Route for getting Carbon footprint.
  * ------------------------------------------
  * 
- * Accepting 4 key parameters in url:
- * Country code.
- * Mode of travel.
- * Type of distance unit measurement.
- * Distance travelled.
- * 
  * Details- https://triptocarbon.com/documentation/api/footprint
  * 
  */
  
-Route::post('/trip-carbon', 'App\Http\Controllers\TripController@getCarbonFootprint');
+Route::post('/trip-to-carbon', 'App\Http\Controllers\TripController@getCarbonFootprint');
