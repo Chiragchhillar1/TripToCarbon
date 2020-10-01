@@ -6,7 +6,7 @@ Carbon Emission Calculation Tools for Travel:
 
 - /api/trip-to-carbon - POST
 
-This endpoint calculates the carbon footprint based on available fuel usage or distance travelled information.
+This endpoint calculates the carbon footprint based on available fuel usage or distance traveled information.
 
 ### Using Trip to Carbon:
 
